@@ -10,7 +10,7 @@ import { sql } from "drizzle-orm"
 
 export const role_template = pgTable("role_template", {
     id: uuid().defaultRandom().primaryKey(),
-    tenent_id: uuid().notNull().references(() => business.id),
+    tenent_id: uuid().notNull().references(() => business.id, { onDelete: 'cascade' }),
     template_name: text().notNull(),
     is_owner: boolean().notNull().default(false),
     created_at: timestamp().defaultNow()
