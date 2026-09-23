@@ -1,0 +1,237 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Verify your email</title>
+</head>
+
+<body style="
+  margin: 0;
+  padding: 0;
+  background-color: #f4f6f8;
+  font-family: Arial, Helvetica, sans-serif;
+  color: #1f2937;
+">
+
+  <!-- Preheader -->
+  <div style="
+    display: none;
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+  ">
+    Verify your email address to activate your account.
+  </div>
+
+  <table
+    role="presentation"
+    width="100%"
+    cellpadding="0"
+    cellspacing="0"
+    border="0"
+    style="background-color: #f4f6f8; padding: 40px 16px;"
+  >
+    <tr>
+      <td align="center">
+
+        <!-- Main Card -->
+        <table
+          role="presentation"
+          width="100%"
+          cellpadding="0"
+          cellspacing="0"
+          border="0"
+          style="
+            max-width: 560px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+          "
+        >
+
+          <!-- Header -->
+          <tr>
+            <td
+              style="
+                padding: 28px 40px;
+                background-color: #111827;
+                text-align: center;
+              "
+            >
+              <div style="
+                font-size: 22px;
+                font-weight: 700;
+                color: #ffffff;
+              ">
+                {{businessName}}
+              </div>
+            </td>
+          </tr>
+
+          <!-- Content -->
+          <tr>
+            <td style="padding: 40px;">
+
+              <h1 style="
+                margin: 0 0 20px 0;
+                font-size: 28px;
+                line-height: 1.3;
+                font-weight: 700;
+                color: #111827;
+              ">
+                Verify your email
+              </h1>
+
+              <p style="
+                margin: 0 0 16px 0;
+                font-size: 16px;
+                line-height: 1.6;
+                color: #4b5563;
+              ">
+                Hi {{name}},
+              </p>
+
+              <p style="
+                margin: 0 0 24px 0;
+                font-size: 16px;
+                line-height: 1.6;
+                color: #4b5563;
+              ">
+                Thanks for signing up! Before you can access your account,
+                please verify that this email address belongs to you.
+              </p>
+
+              <!-- CTA -->
+              <table
+                role="presentation"
+                cellpadding="0"
+                cellspacing="0"
+                border="0"
+                style="margin: 0 auto 28px auto;"
+              >
+                <tr>
+                  <td
+                    align="center"
+                    style="
+                      border-radius: 8px;
+                      background-color: #2563eb;
+                    "
+                  >
+                    <a
+                      href="{{verificationUrl}}"
+                      style="
+                        display: inline-block;
+                        padding: 14px 28px;
+                        font-size: 16px;
+                        font-weight: 600;
+                        color: #ffffff;
+                        text-decoration: none;
+                        border-radius: 8px;
+                      "
+                    >
+                      Verify Email Address
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="
+                margin: 0 0 8px 0;
+                font-size: 14px;
+                line-height: 1.5;
+                color: #6b7280;
+              ">
+                If the button doesn't work, copy and paste this link into
+                your browser:
+              </p>
+
+              <p style="
+                margin: 0 0 28px 0;
+                font-size: 13px;
+                line-height: 1.5;
+                word-break: break-all;
+              ">
+                <a
+                  href="{{verificationUrl}}"
+                  style="
+                    color: #2563eb;
+                    text-decoration: none;
+                  "
+                >
+                  {{verificationUrl}}
+                </a>
+              </p>
+
+              <!-- Security Notice -->
+              <table
+                role="presentation"
+                width="100%"
+                cellpadding="0"
+                cellspacing="0"
+                border="0"
+                style="
+                  background-color: #f9fafb;
+                  border-radius: 8px;
+                "
+              >
+                <tr>
+                  <td style="padding: 16px;">
+                    <p style="
+                      margin: 0;
+                      font-size: 13px;
+                      line-height: 1.5;
+                      color: #6b7280;
+                    ">
+                      <strong style="color: #374151;">
+                        Didn't create this account?
+                      </strong>
+                      You can safely ignore this email. No action is required.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td
+              style="
+                padding: 24px 40px;
+                border-top: 1px solid #e5e7eb;
+                text-align: center;
+              "
+            >
+              <p style="
+                margin: 0 0 8px 0;
+                font-size: 12px;
+                line-height: 1.5;
+                color: #9ca3af;
+              ">
+                This verification link is intended only for you.
+              </p>
+
+              <p style="
+                margin: 0;
+                font-size: 12px;
+                line-height: 1.5;
+                color: #9ca3af;
+              ">
+                © {{year}} {{businessName}}. All rights reserved.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>
+```

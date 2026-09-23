@@ -1,0 +1,122 @@
+name: Inventory management system
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    branches:
+      - testing
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Unit and integration tests
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit tests
+        run: npm test -- --runInBand
+
+      - name: Run integration and E2E tests
+        run: npm run test:e2e -- --runInBand
+
+  test-testing-branch:
+    name: Test merged testing branch
+    if: github.event_name == 'push' && github.ref == 'refs/heads/testing'
+    runs-on: ubuntu-latest
+    # environment: testing
+    # permissions:
+    #   contents: read
+    #   id-token: write
+
+    steps:
+      - name: Check out merged testing branch
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit tests
+        run: npm test -- --runInBand
+
+      - name: Run integration and E2E tests
+        run: npm run test:e2e -- --runInBand
+
+      # AWS deployment is intentionally disabled for now.
+      # - name: Build application
+      #   run: npm run build
+      #
+      # - name: Configure AWS credentials
+      #   uses: aws-actions/configure-aws-credentials@v4
+      #   with:
+      #     aws-region: ${{ vars.AWS_REGION }}
+      #     role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+      #
+      # - name: Log in to Amazon ECR
+      #   id: ecr
+      #   uses: aws-actions/amazon-ecr-login@v2
+      #
+      # - name: Build and push Docker image
+      #   env:
+      #     ECR_REGISTRY: ${{ steps.ecr.outputs.registry }}
+      #     ECR_REPOSITORY: ${{ vars.AWS_ECR_REPOSITORY }}
+      #     IMAGE_TAG: ${{ github.sha }}
+      #   run: |
+      #     docker build --tag "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" .
+      #     docker push "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+      #
+      # - name: Update ECS service
+      #   env:
+      #     AWS_REGION: ${{ vars.AWS_REGION }}
+      #     ECS_CLUSTER: ${{ vars.AWS_ECS_CLUSTER }}
+      #     ECS_SERVICE: ${{ vars.AWS_ECS_SERVICE }}
+      #     ECS_TASK_DEFINITION: ${{ vars.AWS_ECS_TASK_DEFINITION }}
+      #     ECR_REGISTRY: ${{ steps.ecr.outputs.registry }}
+      #     ECR_REPOSITORY: ${{ vars.AWS_ECR_REPOSITORY }}
+      #     IMAGE_TAG: ${{ github.sha }}
+      #   run: |
+      #     aws ecs describe-task-definition \
+      #       --task-definition "$ECS_TASK_DEFINITION" \
+      #       --query taskDefinition > task-definition.json
+      #
+      #     jq --arg image "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" \
+      #       '.containerDefinitions[0].image = $image
+      #       | del(.taskDefinitionArn, .revision, .status, .requiresAttributes,
+      #         .compatibilities, .registeredAt, .registeredBy)' \
+      #       task-definition.json > rendered-task-definition.json
+      #
+      #     TASK_DEFINITION_ARN=$(aws ecs register-task-definition \
+      #       --cli-input-json file://rendered-task-definition.json \
+      #       --query taskDefinition.taskDefinitionArn \
+      #       --output text)
+      #
+      #     aws ecs update-service \
+      #       --cluster "$ECS_CLUSTER" \
+      #       --service "$ECS_SERVICE" \
+      #       --task-definition "$TASK_DEFINITION_ARN" \
+      #       --force-new-deployment
+      #
+      #     aws ecs wait services-stable \
+      #       --cluster "$ECS_CLUSTER" \
+      #       --services "$ECS_SERVICE"
