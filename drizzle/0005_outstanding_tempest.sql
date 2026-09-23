@@ -1,0 +1,1 @@
+CREATE POLICY "role_template_signup_policy" ON "role_template" AS PERMISSIVE FOR INSERT TO public WITH CHECK (current_setting('app.signup_mode', true) = 'true');
