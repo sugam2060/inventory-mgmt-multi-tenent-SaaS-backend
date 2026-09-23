@@ -46,6 +46,7 @@ export const databaseProvider: Provider = {
 
 		const pool = new Pool({
 			connectionString: databaseUrl,
+			keepAlive: true,
 			max: getInteger(configService, "DATABASE_POOL_MAX", 10),
 			min: getInteger(configService, "DATABASE_POOL_MIN", 2),
 			idleTimeoutMillis: getInteger(
@@ -58,6 +59,10 @@ export const databaseProvider: Provider = {
 				"DATABASE_CONNECTION_TIMEOUT_MS",
 				5_000,
 			),
+		});
+
+		pool.on("error", (error) => {
+			console.error("Unexpected PostgreSQL pool error.", error);
 		});
 
 		return {

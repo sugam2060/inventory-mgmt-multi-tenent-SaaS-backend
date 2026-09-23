@@ -6,6 +6,7 @@ import { MailModule } from '../mail/mail.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { HashingService } from './hashing.service';
+import { RefreshService } from './refresh.service';
 
 @Module({
     imports:[
@@ -23,6 +24,6 @@ import { HashingService } from './hashing.service';
         }),
     ],
     controllers: [AuthController],
-    providers: [AuthService,HashingService]
+    providers: [AuthService, HashingService, RefreshService]
 })
 export class AuthModule {}

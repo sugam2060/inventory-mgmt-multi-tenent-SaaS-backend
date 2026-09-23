@@ -1,12 +1,15 @@
-import { ConflictException, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
 import { HashingService } from './hashing.service';
 import { RegisterBusinessDTO } from './dto/registration.dto';
-import { eq, sql,or } from 'drizzle-orm';
+import { eq, sql, or } from 'drizzle-orm';
 import { business } from '../database/schema/business.schema';
 import { role_template } from '../database/schema/role_template.schema';
 import { user_profile } from '../database/schema/user_profile.schema';
 import { MailService } from '../mail/mail.service';
+import { LoginDTO } from './dto/login.dto';
+import { JwtService } from '@nestjs/jwt';
+import { RefreshService, type RefreshUser } from './refresh.service';
 
 @Injectable()
 export class AuthService {
@@ -15,7 +18,9 @@ export class AuthService {
     constructor(
         private readonly databaseService: DatabaseService,
         private readonly hashingService: HashingService,
-        private readonly mailService: MailService
+        private readonly mailService: MailService,
+        private readonly jwtService: JwtService,
+        private readonly refreshService: RefreshService,
     ) { }
 
 
@@ -106,5 +111,104 @@ export class AuthService {
             }
             throw error;
         }
+    }
+
+
+    async login(data: LoginDTO) {
+        const { username, email,password } = data;
+
+        if (!username && !email) {
+            throw new BadRequestException('Username or email is required.');
+        }
+
+        try {
+            const user = await this.databaseService.db
+            .select({
+                id: user_profile.id,
+                password: user_profile.password,
+                fullname: user_profile.fullname,
+                email:user_profile.email,
+                tenent_id: user_profile.tenent_id,
+                isActive: user_profile.is_active,
+                business_name:business.name
+            })
+            .from(user_profile).innerJoin(business, eq(user_profile.tenent_id,business.id))
+            .where(
+                username
+                    ? eq(user_profile.username, username)
+                    : eq(user_profile.email, email!),
+            )
+            .limit(1);
+
+            const [matchedUser] = user;
+
+            if (!matchedUser) {
+                throw new UnauthorizedException('Invalid username/email or password.');
+            }
+
+            if (!matchedUser.isActive) {
+                void this.mailService.sendWelcomeEmail(user[0].email,{
+                    businessName:matchedUser.business_name,
+                    name:matchedUser.fullname,
+                    verificationUrl: `$http://localhost:3000/api/v1/auth/verify-email?userId=${matchedUser.id}` 
+                })
+                throw new UnauthorizedException('Please verify your email first.');
+            }
+
+            const isPasswordValid = await this.hashingService.compare(
+                password,
+                matchedUser.password,
+            );
+
+            if (!isPasswordValid) {
+                throw new UnauthorizedException('Invalid username/email or password.');
+            }
+
+            return this.createTokenPair(matchedUser);
+        } catch (error) {
+            if (error instanceof UnauthorizedException || error instanceof BadRequestException) {
+                throw error;
+            }
+
+            this.logger.error('Login failed.', error instanceof Error ? error.stack : String(error));
+            throw new UnauthorizedException('Unable to log in.');
+        }
+    }
+
+    async refreshToken(token: string) {
+        if (!token?.trim()) {
+            throw new UnauthorizedException('Refresh token is required.');
+        }
+
+        try {
+            const user = await this.refreshService.findUserByToken(token);
+            return this.createTokenPair(user);
+        } catch (error) {
+            if (error instanceof UnauthorizedException) {
+                throw error;
+            }
+
+            throw new UnauthorizedException('Invalid or expired refresh token.');
+        }
+    }
+
+    private async createTokenPair(user: RefreshUser) {
+        const payload = {
+            sub: user.id,
+            tenent_id: user.tenent_id,
+            fullname: user.fullname,
+        };
+
+        const refreshToken = await this.refreshService.rotate(user.id);
+
+        const accessToken = await this.jwtService.signAsync(payload, { expiresIn: '20m' });
+
+        return {
+            message:"Login Successfully",
+            data: {
+                accessToken,
+            refreshToken,
+            }
+        };
     }
 }

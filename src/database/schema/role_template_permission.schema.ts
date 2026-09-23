@@ -6,7 +6,7 @@ import { permissions } from "./permissions.schema"
 
 
 export const role_template_permission = pgTable("role_template_permission", {
-    role_template_id: uuid().notNull().references(() => role_template.id),
+    role_template_id: uuid().notNull().references(() => role_template.id, { onDelete: 'cascade' }),
     tenent_id: uuid().notNull(),
     permission_id: uuid().notNull().references(() => permissions.id)
 },

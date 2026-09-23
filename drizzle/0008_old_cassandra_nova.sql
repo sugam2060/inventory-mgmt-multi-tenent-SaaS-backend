@@ -1,0 +1,2 @@
+CREATE UNIQUE INDEX "refresh_token_one_per_user" ON "refresh_token" USING btree ("user_id");--> statement-breakpoint
+CREATE POLICY "refresh_token_delete_policy" ON "refresh_token" AS PERMISSIVE FOR DELETE TO public USING (current_setting('app.rotate_refresh_token', true) = 'true');

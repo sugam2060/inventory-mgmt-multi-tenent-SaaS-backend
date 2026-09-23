@@ -3,14 +3,15 @@ import {business} from "./business.schema"
 import { role_template } from "./role_template.schema"
 import { relations, sql } from "drizzle-orm"
 import { pgPolicy } from "drizzle-orm/pg-core"
+import { refresh_token } from "./refreshToken.schema"
 
 
 
 
 export const user_profile = pgTable("user_profile", {
     id: uuid().defaultRandom().primaryKey(),
-    tenent_id: uuid().notNull().references(() => business.id),
-    role_template_id: uuid().notNull().references(() => role_template.id),
+    tenent_id: uuid().notNull().references(() => business.id, { onDelete: 'cascade' }),
+    role_template_id: uuid().notNull().references(() => role_template.id, { onDelete: 'cascade' }),
     fullname:text().notNull(),
     username:text().notNull().unique(),
     email:text().notNull().unique(),
@@ -37,7 +38,7 @@ export const user_profile = pgTable("user_profile", {
 
 export const userProfileRelations = relations(
   user_profile,
-  ({ one }) => ({
+  ({ one, many }) => ({
     business: one(business, {
       fields: [user_profile.tenent_id],
       references: [business.id],
@@ -46,5 +47,6 @@ export const userProfileRelations = relations(
       fields: [user_profile.role_template_id],
       references: [role_template.id],
     }),
+    refreshTokens: many(refresh_token),
   }),
 );
