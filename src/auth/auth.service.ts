@@ -1,8 +1,8 @@
-import { BadRequestException, ConflictException, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, InternalServerErrorException, Logger, NotImplementedException, UnauthorizedException } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
 import { HashingService } from './hashing.service';
 import { RegisterBusinessDTO } from './dto/registration.dto';
-import { eq, sql, or } from 'drizzle-orm';
+import { eq, sql, or, and } from 'drizzle-orm';
 import { business } from '../database/schema/business.schema';
 import { role_template } from '../database/schema/role_template.schema';
 import { user_profile } from '../database/schema/user_profile.schema';
@@ -210,5 +210,41 @@ export class AuthService {
             refreshToken,
             }
         };
+    }
+
+    async getUserInfo (user_id:string, tenent_id:string){
+        // We will implement the cache mechanism in this later
+        try {
+            const [userInfo] = await this.databaseService.db.select({
+                fullname:user_profile.fullname,
+                name:business.name
+            }).from(user_profile).innerJoin(business,eq(user_profile.tenent_id,business.id)).where(
+                and(
+                    eq(user_profile.id,user_id),
+                    eq(business.id,tenent_id)
+                )
+            ).limit(1);
+
+            if (!userInfo) {
+                throw new UnauthorizedException('User information not found.');
+            }
+
+            return {
+                message: 'User information fetched successfully.',
+                data: userInfo,
+            };
+        } catch (error) {
+            if (error instanceof UnauthorizedException) {
+                throw error;
+            }
+
+            this.logger.error(
+                'Failed to fetch user information.',
+                error instanceof Error ? error.stack : String(error),
+            );
+            throw new InternalServerErrorException(
+                'Unable to fetch user information.',
+            );
+        }
     }
 }

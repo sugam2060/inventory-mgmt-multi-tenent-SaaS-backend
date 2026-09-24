@@ -8,6 +8,7 @@ import { RefreshService } from '../refresh.service';
 import {
   BadRequestException,
   ConflictException,
+  InternalServerErrorException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { RegisterBusinessDTO } from '../dto/registration.dto';
@@ -350,6 +351,43 @@ describe('AuthService', () => {
 
       await expect(service.refreshToken('invalid-token')).rejects.toThrow(
         new UnauthorizedException('Invalid or expired refresh token.'),
+      );
+    });
+  });
+
+  describe('getUserInfo', () => {
+    it('should return the user fullname and business name', async () => {
+      const userInfo = {
+        fullname: 'John Doe',
+        name: 'Acme Corp',
+      };
+      mockDbLimit.mockResolvedValueOnce([userInfo]);
+
+      const result = await service.getUserInfo('user-id', 'tenant-id');
+
+      expect(result).toEqual({
+        message: 'User information fetched successfully.',
+        data: userInfo,
+      });
+      expect(mockDbSelect).toHaveBeenCalledTimes(1);
+      expect(mockDbWhere).toHaveBeenCalledTimes(1);
+    });
+
+    it('should throw UnauthorizedException when the user is not found', async () => {
+      mockDbLimit.mockResolvedValueOnce([]);
+
+      await expect(
+        service.getUserInfo('missing-user-id', 'tenant-id'),
+      ).rejects.toThrow(
+        new UnauthorizedException('User information not found.'),
+      );
+    });
+
+    it('should throw InternalServerErrorException when the query fails', async () => {
+      mockDbLimit.mockRejectedValueOnce(new Error('Database unavailable'));
+
+      await expect(service.getUserInfo('user-id', 'tenant-id')).rejects.toThrow(
+        new InternalServerErrorException('Unable to fetch user information.'),
       );
     });
   });

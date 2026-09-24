@@ -4,6 +4,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { DatabaseModule } from '../database/database.module';
 import { MailModule } from '../mail/mail.module';
 import { AuthController } from './auth.controller';
+import { AuthGuard } from './auth.guard';
 import { AuthService } from './auth.service';
 import { HashingService } from './hashing.service';
 import { RefreshService } from './refresh.service';
@@ -24,6 +25,6 @@ import { RefreshService } from './refresh.service';
         }),
     ],
     controllers: [AuthController],
-    providers: [AuthService, HashingService, RefreshService]
+    providers: [AuthService, AuthGuard, HashingService, RefreshService]
 })
 export class AuthModule {}

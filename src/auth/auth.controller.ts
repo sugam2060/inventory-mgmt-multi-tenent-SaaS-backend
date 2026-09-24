@@ -1,16 +1,20 @@
 import {
     Body,
     Controller,
+    Get,
     Headers,
     HttpCode,
     HttpStatus,
+    NotImplementedException,
     Post,
     UnauthorizedException,
+    UseGuards,
 } from '@nestjs/common';
 import { RegisterBusinessDTO } from './dto/registration.dto';
 import { AuthService } from './auth.service';
 import { IncludeResponseData } from '../common/decorators/response-data.decorator';
 import { LoginDTO } from './dto/login.dto';
+import { AuthGuard } from './auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -43,5 +47,14 @@ export class AuthController {
         }
 
         return this.authService.refreshToken(token);
+    }
+
+
+    @Get("/me")
+    @HttpCode(HttpStatus.OK)
+    @IncludeResponseData()
+    @UseGuards(AuthGuard)
+    getUserinfo(@Body() data:{tenent_id:string,user_id:string}) {
+        return this.authService.getUserInfo(data.user_id,data.tenent_id)
     }
 }
